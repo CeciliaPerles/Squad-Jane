@@ -1,0 +1,122 @@
+services:
+  postgres_source:
+    image: postgres:16
+    container_name: postgres_source
+    environment:
+      POSTGRES_USER: source_user
+      POSTGRES_PASSWORD: source_pass
+      POSTGRES_DB: source_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_source_data:/var/lib/postgresql/data
+
+  postgres_airflow:
+    image: postgres:16
+    container_name: postgres_airflow
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_airflow_data:/var/lib/postgresql/data
+
+  airflow_webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: airflow_webserver
+    depends_on:
+      - postgres_airflow
+      - postgres_source
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres_airflow:5432/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+      AIRFLOW__API__BASE_URL: http://localhost:8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./dbt:/opt/airflow/dbt
+      - ./duckdb:/opt/airflow/duckdb
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create
+      --username admin
+      --password admin
+      --firstname Admin
+      --lastname User
+      --role Admin
+      --email admin@example.com || true &&
+      airflow webserver
+      "
+
+  airflow_scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: airflow_scheduler
+    depends_on:
+      - airflow_webserver
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres_airflow:5432/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./dbt:/opt/airflow/dbt
+      - ./duckdb:/opt/airflow/duckdb
+    command: scheduler
+
+  postgres_superset:
+    image: postgres:16
+    container_name: postgres_superset
+    environment:
+      POSTGRES_USER: superset
+      POSTGRES_PASSWORD: superset
+      POSTGRES_DB: superset
+    volumes:
+      - postgres_superset_data:/var/lib/postgresql/data
+
+  superset:
+    image: apache/superset:latest
+    container_name: superset
+    depends_on:
+      - postgres_superset
+      - postgres_source
+    environment:
+      SUPERSET_SECRET_KEY: "dev_secret_key_change_me"
+      DATABASE_DB: superset
+      DATABASE_HOST: postgres_superset
+      DATABASE_PASSWORD: superset
+      DATABASE_USER: superset
+      DATABASE_PORT: 5432
+      DATABASE_DIALECT: postgresql
+    ports:
+      - "8088:8088"
+    volumes:
+      - superset_home:/app/superset_home
+      - ./duckdb:/app/duckdb
+    command: >
+      /bin/sh -c "
+      superset db upgrade &&
+      superset fab create-admin
+      --username admin
+      --firstname Admin
+      --lastname User
+      --email admin@example.com
+      --password admin || true &&
+      superset init &&
+      superset run -h 0.0.0.0 -p 8088
+      "
+
+volumes:
+  postgres_source_data:
+  postgres_airflow_data:
+  postgres_superset_data:
+  superset_home:
