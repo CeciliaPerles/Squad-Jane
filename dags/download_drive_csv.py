@@ -2,20 +2,36 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 import gdown
+import pandas as pd
+from sqlalchemy import create_engine
 
 FILE_ID = "1GXdnjst6mzpkgIkMxOQdy1-Qt0xAw5f4"
 OUTPUT_PATH = "/opt/airflow/data/arquivo_drive.csv"
+CONN = "postgresql+psycopg2://source_user:source_pass@postgres_source:5432/source_db"
 
 def inicio():
     print("Iniciando o processo.")
 
 def coleta():
-    print("Coletando dados.")
     url = f"https://drive.google.com/uc?id={FILE_ID}"
     gdown.download(url, OUTPUT_PATH, quiet=False)
+    print("Coletando dados.")
 
-def processamento():
+def grava():
+
+    engine = create_engine(CONN)
+
+    df = pd.read_csv(OUTPUT_PATH)
+
+    df.to_sql(
+        name="ecommerce",
+        con=engine,
+        schema="public",
+        if_exists="replace",
+        index=True
+    )
     print("Gravando dados.")
+
 
 def fim():
     print("Processo finalizado com sucesso!")
@@ -38,7 +54,7 @@ with DAG(
 
     processa_dados = PythonOperator(
         task_id='processa_dados',
-        python_callable=processamento,
+        python_callable=grava,
     )
 
     fim_processo = PythonOperator(
@@ -47,4 +63,4 @@ with DAG(
     )
 
     # Encadeando as tarefas na ordem desejada
-    inicio_processo >> coleta_dados >> fim_processo
+    inicio_processo >> coleta_dados >> processa_dados >> fim_processo
