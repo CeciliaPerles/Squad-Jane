@@ -10,4 +10,5 @@ RUN pip install --no-cache-dir \
     sqlalchemy \
     psycopg2-binary \
     openpyxl \
-    pyarrow
+    pyarrow \
+    gdown
