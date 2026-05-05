@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from airflow import DAG
 from datetime import datetime
 from airflow.operators.python import PythonOperator
+import os
 
 POSTGRES_CONN = "postgresql+psycopg2://source_user:source_pass@postgres_source:5432/source_db"
 DUCKDB_PATH = "/opt/airflow/duckdb/warehouse.duckdb"
@@ -14,6 +15,7 @@ def inicio():
 
 def coleta_postgres():
     print("Coletando dados no Postgres.")
+    os.makedirs("/opt/airflow/tmp", exist_ok=True)
     engine = create_engine(POSTGRES_CONN)
     try:
         with engine.connect() as conn:
