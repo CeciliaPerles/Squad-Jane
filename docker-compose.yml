@@ -43,6 +43,7 @@ services:
       - ./dbt:/opt/airflow/dbt
       - ./duckdb:/opt/airflow/duckdb
       - ./data:/opt/airflow/data
+      - ./tmp:/opt/airflow/tmp
     command: >
       bash -c "
       airflow db migrate &&
@@ -74,6 +75,7 @@ services:
       - ./dbt:/opt/airflow/dbt
       - ./duckdb:/opt/airflow/duckdb
       - ./data:/opt/airflow/data
+      - ./tmp:/opt/airflow/tmp
     command: scheduler
 
   postgres_superset:
