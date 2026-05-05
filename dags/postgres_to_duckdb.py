@@ -49,7 +49,7 @@ def fim():
     print("Processo finalizado com sucesso!")
 
 with DAG(
-    dag_id='downloado_drive_csv',
+    dag_id='postgres_to_duckdb',
     start_date=datetime(2026, 4, 29),
     schedule_interval='0 * * * *',  # Executa de hora em hora
 ) as dag:
