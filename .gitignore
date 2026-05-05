@@ -27,3 +27,7 @@ dbt/.user.yml
 .DS_Store
 .idea/
 .vscode/
+
+# Temporary files
+tmp/
+*.parquet
