@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 import gdown
+import requests
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -14,8 +15,14 @@ def inicio():
 
 def coleta():
     url = f"https://drive.google.com/uc?id={FILE_ID}"
-    gdown.download(url, OUTPUT_PATH, quiet=False)
     print("Coletando dados.")
+
+    response = requests.get(url)
+    response.raise_for_status()
+
+    with open(OUTPUT_PATH, "wb") as file:
+        file.write(response.content)
+    print(f"Arquivo salvo em: {OUTPUT_PATH}")
 
 def grava():
 
