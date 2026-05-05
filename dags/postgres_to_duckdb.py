@@ -7,6 +7,7 @@ from airflow.operators.python import PythonOperator
 
 POSTGRES_CONN = "postgresql+psycopg2://source_user:source_pass@postgres_source:5432/source_db"
 DUCKDB_PATH = "/opt/airflow/duckdb/warehouse.duckdb"
+PARQUET_PATH = "/opt/airflow/tmp/ecommerce.parquet"
 
 def inicio():
     print("Iniciando o processo.")
