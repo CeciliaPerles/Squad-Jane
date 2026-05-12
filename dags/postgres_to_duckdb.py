@@ -30,6 +30,8 @@ def coleta_postgres():
 def grava_duckdb():
     print("Gravando dados no DuckDB.")
 
+    os.makedirs("/opt/airflow/duckdb", exist_ok=True)
+
     df = pd.read_parquet("/opt/airflow/tmp/ecommerce.parquet")
 
     conn_duckdb = duckdb.connect(DUCKDB_PATH)
