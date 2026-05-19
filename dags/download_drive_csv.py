@@ -46,7 +46,7 @@ def fim():
 with DAG(
     dag_id='download_drive_csv',
     start_date=datetime(2026, 4, 29),
-    schedule_interval='0 0 * * *',  # Executa de hora em hora
+    schedule_interval='0 0 * * *',  # Executa uma vez por dia 00h
 ) as dag:
 
     inicio_processo = PythonOperator(
