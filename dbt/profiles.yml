@@ -3,5 +3,5 @@ squad:
   outputs:
     dev:
       type: duckdb
-      path: /opt/airflow/dbt/dev.duckdb
+      path: /opt/airflow/duckdb/warehouse.duckdb
       threads: 4
