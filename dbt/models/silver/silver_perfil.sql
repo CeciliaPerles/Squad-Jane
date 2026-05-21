@@ -2,6 +2,7 @@
 
 select
     CustomerID as id_cliente,
+
     case
         when lower(trim(replace(replace(Gender, '"', ''), chr(9), ''))) in ('female', 'feminino', 'f') 
             then 'feminino'
@@ -13,12 +14,14 @@ select
             then 'prefere_nao_informar'
         else 'nao_informado'
     end as genero,
+
     case
         when try_cast(Age as integer) < 0 then null
         when try_cast(Age as integer) > 100 then null
         else try_cast(Age as integer)   
     end as idade,
-   lower(
+
+    lower(
         trim(
             regexp_replace(
                 replace(replace(City, '"', ''), chr(9), ''),
@@ -28,6 +31,7 @@ select
             )
         )
     ) as cidade,
+
     case
         when lower(trim(regexp_replace(replace(replace(IncomeRange, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) 
             in ('baixa (até r$ 3.000)', 'baixa (até r$ 3000)')
@@ -46,8 +50,9 @@ select
             then 'alta'
         when trim(replace(replace(IncomeRange, '"', ''), chr(9), '')) in ('0.0', '99999.99', '9999.99')
             then 'nao_informado'
-    else 'nao_informado'
+        else 'nao_informado'
     end as faixa_renda,
+
     case
         when lower(trim(regexp_replace(replace(replace(EducationLevel, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) = 'ensino fundamental'
             then 'ensino_fundamental'
@@ -61,7 +66,9 @@ select
             then 'pos_graduacao'
         else 'nao_informado'
     end as nivel_educacao,
+
     lower(trim(replace(replace(Occupation, '"', ''), chr(9), ''))) as ocupacao,
+
     case
         when lower(trim(regexp_replace(replace(replace(MaritalStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('single', 'solteiro')
             then 'solteiro'
@@ -70,29 +77,38 @@ select
         when lower(trim(regexp_replace(replace(replace(MaritalStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('divorced', 'divorciado')
             then 'divorciado'
         when lower(trim(regexp_replace(replace(replace(MaritalStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('widowed', 'viúvo')
-            then 'viúvo'
+            then 'viuvo'
         when lower(trim(regexp_replace(replace(replace(MaritalStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('domestic partnership', 'união estável')
-            then 'união_estável'
+            then 'uniao_estavel'
         else 'nao_informado'
     end as estado_civil,
-    HasChildren as possui_filhos,
+
+    case
+        when lower(trim(replace(replace(HasChildren, '"', ''), chr(9), ''))) in ('1', 'true', 'yes', 'y', 'sim')
+            then 1
+        when lower(trim(replace(replace(HasChildren, '"', ''), chr(9), ''))) in ('0', 'false', 'no', 'n', 'não', 'nao')
+            then 0
+        else null
+    end as possui_filhos,
+
     NumberOfChildren as quantidade_filhos,
+
     case
         when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('empregado tempo integral', 'full-time employed')
             then 'empregado_tempo_integral'
         when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('empregado meio período', 'part-time employed')
             then 'empregado_meio_periodo'
-        when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('desempregado')
+        when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) = 'desempregado'
             then 'desempregado'
-        when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('estudante')
+        when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) = 'estudante'
             then 'estudante'
-        when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('autônomo')
-            then 'autônomo'
-        when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('aposentado')
+        when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) = 'autônomo'
+            then 'autonomo'
+        when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) = 'aposentado'
             then 'aposentado'
         when lower(trim(regexp_replace(replace(replace(EmploymentStatus, '"', ''), chr(9), ''), '\s+', ' ', 'g'))) in ('não sei', 'n/d', '???')
             then 'nao_informado'
         else 'nao_informado'
     end as status_emprego
-from {{ ref('bronze_ecommerce') }}
 
+from {{ ref('bronze_ecommerce') }}
