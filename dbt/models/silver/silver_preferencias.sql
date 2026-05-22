@@ -62,7 +62,11 @@ select
             then 'madrugada'
         else 'nao_informado'
     end as horario_entrega_preferido,
-    try_cast(HourSpendOnApp as double) as horas_no_app,
+    case
+        when try_cast(HourSpendOnApp as double) > 24 then null
+        when try_cast(HourSpendOnApp as double) < 0 then null
+        else try_cast(HourSpendOnApp as double)
+    end as horas_no_app,
     try_cast(NumberOfDeviceRegistered as integer) as quantidade_dispositivos_registrados,
     try_cast(AppRating as double) as avaliacao_app,
     try_cast(EmailSubscribed as integer) as inscrito_email,
